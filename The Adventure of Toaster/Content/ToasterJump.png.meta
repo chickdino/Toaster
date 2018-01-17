@@ -1,0 +1,20 @@
+ImageContent = 
+{
+	SpriteSourceBuilder = 
+	{
+		string Name = "ToasterJump",
+		uint64 ResourceId = 5ae51802584ef769,
+		uint64 AtlasId = 5274cf95e4a661fd,
+		uint FrameSizeX = 965,
+		uint FrameSizeY = 965,
+		uint FrameCount = 4,
+		float FrameDelay = 0.0416666679,
+		float OriginX = 482.5,
+		float OriginY = 482.5,
+		float PixelsPerUnit = 64,
+		bool Smoothing = false,
+		bool Looping = false,
+		Vec4 Slices = [0, 0, 0, 0],
+		SpriteFill Fill = Stretch,
+	},
+},

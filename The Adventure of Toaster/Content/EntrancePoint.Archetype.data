@@ -1,0 +1,18 @@
+Cog = 
+{
+	LinkId = 
+	{
+		uint Id = 1,
+	},
+	Named = 
+	{
+		string Name = "EntrancePoint",
+	},
+	Archetyped = 
+	{
+		string Name = "5af9717684e39b81:EntrancePoint",
+	},
+	EntrancePoint = 
+	{
+	},
+},

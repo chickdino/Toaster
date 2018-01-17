@@ -1,0 +1,126 @@
+class PlayerMovement : ZilchComponent
+{
+    var MoveUp : Boolean = true;
+    var MoveDown : Boolean = true;
+    var Jump : Boolean = true;
+    var CanS : Boolean;
+    
+    var Timer : Real = 0.5;
+    var Fall : Boolean = false; 
+    
+    var CanLeft : Boolean = true;
+    var CanRight : Boolean = true;
+    
+    function Initialize(init : CogInitializer)
+    {
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+        Zero.Connect(this.Owner, Events.CollisionStarted, this.CollisionStarted);
+        Zero.Connect(this.Owner, Events.CollisionEnded, this.CollisionEnded);
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        //IF A IS DOWN AND CANLEFT IS TRUE ==> MOVE LEFT
+        if(Zero.Keyboard.KeyIsDown(Keys.A) && this.CanLeft == true)
+        {
+            this.Owner.Transform.Translation += Real3(-15 * event.Dt, 0, 0);
+        }
+        
+        //IF D IS DOWN AND CANRIGHT IS TRUE ==> MOVE RIGHT
+        if(Zero.Keyboard.KeyIsDown(Keys.D) && this.CanRight == true)
+        {
+            this.Owner.Transform.Translation += Real3(15 * event.Dt, 0, 0);
+        }
+        
+        // IF S IS PRESSED AND CANS IS TRUE ==> GHOST TROUGH PLATFORM AND FALL IS TRUE
+        //THE FALL VARIABLE SAYS THE PLAYER MEANT TO FALL THOUGH A PLATFORM SO HE DOESN'T UNGHOST
+        if(Zero.Keyboard.KeyIsPressed(Keys.S) && this.CanS == true)
+            {
+                this.Owner.BoxCollider.Ghost = true;
+                this.Fall = true;
+            }
+        
+        //IF W IS PRESSED AND JUMP IS TRUE ==> JUMP
+        if(Zero.Keyboard.KeyIsPressed(Keys.W) && this.Jump == true)
+        {
+            this.Owner.BoxCollider.Ghost = true;
+            this.Owner.RigidBody.Velocity += Real3(0, 40, 0);
+        }
+        
+        //IF VELOCITY IS DOWN AND FALL IS FALSE ==> GHOST IS FALSE
+        //THIS IS SO IF PLAYER IS FALLING BUT DID'T PRESS S TO FALL THEN THE PLAYER CAN FALL ON PLATFORM BELOW
+        if(this.Owner.RigidBody.Velocity.Y < 0 && this.Fall == false)
+        {
+            this.Owner.BoxCollider.Ghost = false;
+        }
+        
+    }
+    
+    
+    
+    function CollisionStarted (event : CollisionEvent)
+    {
+        //IF COLLIDING WITH FLOOR ==> JUMP IS TRUE, GHOST IS FALSE, AND CANS IS FALSE
+        if(event.OtherObject.Name == "Floor")
+        {
+            Console.WriteLine("on");
+            this.Jump = true;
+            this.Owner.BoxCollider.Ghost = false;
+            this.CanS = false;
+        }
+        
+        //IF COLLIDING WITH PLATFORM ==> JUMP IS TRUE AND CANS IS TRUE
+        if(event.OtherObject.Name == "Platform")
+        {
+            Console.WriteLine("on");
+            this.Jump = true;
+            this.CanS = true;
+        }
+        
+        //IF COLLIDE WITH LEFT WALL ==> CANT MOVE LEFT
+        if(event.OtherObject.Name == "LeftWall")
+        {
+            this.CanLeft = false;
+        }
+        
+        //IF COLLIDE WITH RIGHT WALL ==> CANT MOVE RIGHT
+        if(event.OtherObject.Name == "RightWall")
+        {
+            this.CanRight = false;
+        }
+    }
+    
+    function CollisionEnded (event : CollisionEvent)
+    {
+        //IF LEAVE FLOOR OR PLATFORM ==> JUMP IS FALSE
+        //THIS PREVENTS MULTI JUMP
+        if(event.OtherObject.Name == "Platform" || event.OtherObject.Name == "Floor")
+        {
+            Console.WriteLine("Leave");
+            this.Jump = false;
+            this.CanS = false;
+        }
+        
+        //IF PLAYER PRESSES S TO FALL THROUGH PLATFORM AND LEAVE PLATFORM ==> GHOST IS FALSE AND FALL IS FALSE
+        if(event.OtherObject.Name != "Floor")
+        {
+            if(this.Fall == true)
+            {
+                this.Owner.BoxCollider.Ghost = false;
+                this.Fall = false;
+            }
+        }
+        
+        //IF NO COLLIDE WITH LEFT WALL ==> CAN MOVE LEFT
+        if(event.OtherObject.Name == "LeftWall")
+        {
+            this.CanLeft = true;
+        }
+        
+        //IF NO COLLIDE WITH RIGHT WALL ==> CAN MOVE RIGHT
+        if(event.OtherObject.Name == "RightWall")
+        {
+            this.CanRight = true;
+        }
+    }
+}

@@ -1,0 +1,22 @@
+class CameraFollow : ZilchComponent
+{
+    
+    [Property]
+    var TargetObjectCogPath : CogPath = null;
+    
+    var TargetObject : Cog = null;
+    
+    function Initialize(init : CogInitializer)
+    {
+        this.TargetObject = this.TargetObjectCogPath.Cog;
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        var newCameraPos = this.TargetObject.Transform.LocalTranslation;
+        newCameraPos.Z = this.Owner.Transform.LocalTranslation.Z;
+        newCameraPos.Y += 1;
+        this.Owner.Transform.LocalTranslation = newCameraPos;
+    }
+}

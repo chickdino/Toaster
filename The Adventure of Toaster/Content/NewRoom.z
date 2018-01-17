@@ -1,0 +1,46 @@
+class NewRoom : ZilchComponent
+{
+    var DataCog : Cog = null;
+    [Property]
+    var Destination: Level;
+    [Property]
+    var DestTranslation: Real3 = Real3();
+    
+    var WithinRange: Boolean = false;
+    var TriggerDistance: Real = 10.0;
+    var DistanceFromTarget: Real = 5.0;
+    var PlayerDirection: Real3 = Real3();
+    
+    [Property]
+    var PlayerCog: CogPath;
+    
+    function Initialize(init : CogInitializer)
+    {
+        this.DataCog = Zero.ObjectStore.RestoreOrArchetype ("EntrancePointData", Archetype.SavedEntranceData, this.Space);
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        this.PlayerDirection = this.PlayerCog.Cog.Transform.Translation - this.Owner.Transform.Translation;
+        this.DistanceFromTarget = Math.Length(this.PlayerDirection);
+        this.WithinRange = (this.DistanceFromTarget <= this.TriggerDistance);
+        
+        if(this.WithinRange)
+        {
+            if(Zero.Keyboard.KeyIsPressed(Keys.Space))
+            {
+                this.DataCog.RoomEntrancePoints.NewStartPos = this.DestTranslation;
+                Zero.ObjectStore.Store("EntrancePointData", this.DataCog);
+                this.Space.LoadLevel(this.Destination);
+            }
+            
+            this.Owner.Sprite.Visible = true;
+        }
+        
+        else
+        {
+            this.Owner.Sprite.Visible = false;
+        }
+    }
+}

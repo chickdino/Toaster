@@ -1,0 +1,99 @@
+class PlayerSprite : ZilchComponent
+{
+    [Property]
+    var PlayerIdle : SpriteSource;
+    [Property]
+    var PlayerWalk : SpriteSource;
+    [Property]
+    var PlayerJump : SpriteSource;
+    [Property]
+    var PlayerFall : SpriteSource;
+    
+    var Grounded : Boolean;
+    function Initialize(init : CogInitializer)
+    {
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+        Zero.Connect(this.Owner, Events.CollisionStarted, this.CollisionS);
+        Zero.Connect(this.Owner, Events.CollisionEnded, this.CollisionE);
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        //Console.WriteLine(this.Owner.RigidBody.Velocity.Y);
+        //IF A IS DOWN ==> FLIP TO LOOK LEFT(ORIGINAL DIRECTION)
+        if(Zero.Keyboard.KeyIsDown(Keys.A))
+        {
+            this.Owner.Sprite.FlipX = false;
+        }
+        
+        //IF D IS DOWN ==> FLIP TO LOOK RIGHT
+        if(Zero.Keyboard.KeyIsDown(Keys.D))
+        {
+            this.Owner.Sprite.FlipX = true;
+        }
+        
+        //IF NEITHER A OR D IS DOWN AND VELOCITY IS NONE ==> IDLE
+        if(Zero.Keyboard.KeyIsUp(Keys.D) && Zero.Keyboard.KeyIsUp(Keys.A) && this.Owner.RigidBody.Velocity.Y > -0.1 && this.Owner.RigidBody.Velocity.Y < 0.1)
+        {
+             if(this.Owner.Sprite.SpriteSource != this.PlayerIdle)
+            {
+                this.Owner.Sprite.SpriteSource = this.PlayerIdle;
+            }
+        }
+        
+        //IF A OR D IS DOWN ==> MOVE LEFT/RIGHT
+        if(Zero.Keyboard.KeyIsDown(Keys.D) || Zero.Keyboard.KeyIsDown(Keys.A))
+        {
+            if(this.Owner.Sprite.SpriteSource != this.PlayerJump)
+            {
+                if(this.Owner.Sprite.SpriteSource != this.PlayerWalk)
+                {
+                    this.Owner.Sprite.SpriteSource = this.PlayerWalk;
+                }
+            }
+        }
+        
+        //IF W IS PRESSED AND VELOCITY IS UP ==> JUMP
+        if(Zero.Keyboard.KeyIsPressed(Keys.W) && this.Owner.RigidBody.Velocity.Y >= 7)
+        {
+            if(this.Owner.Sprite.SpriteSource != this.PlayerJump && this.Owner.RigidBody.Velocity.Y >= 7)
+            {
+                this.Owner.Sprite.SpriteSource = this.PlayerJump;
+            }
+        }
+        
+        //IF VELOCITY IS DOWN AND GROUNDED IS FALSE ==> FALL
+        if(this.Owner.RigidBody.Velocity.Y < -6)
+        {
+            if(this.Grounded != true)
+            {
+                if(this.Owner.Sprite.SpriteSource != this.PlayerFall)
+                {
+                    this.Owner.Sprite.SpriteSource = this.PlayerFall;
+                }
+            }
+        }
+    }
+    
+    function CollisionS(event : CollisionEvent)
+    {
+        //IF COLLIDING WITH THING BELOW PLAYER ==> GROUNDED IS TRUE
+        if(event.OtherObject.Name == "Platform" || event.OtherObject.Name == "Floor")
+        {
+            this.Grounded = true;
+            if(event.OtherObject.Transform.Translation.Y < this.Owner.Transform.Translation.Y && this.Owner.Sprite.SpriteSource == this.PlayerJump)
+            {
+                this.Owner.Sprite.SpriteSource = this.PlayerFall;
+            }
+        }
+    }
+    
+    function CollisionE(event : CollisionEvent)
+    {
+        //IF NOT COLLIDING WITH THING BELOW PLAYER ==> GROUNDED IS FALSE
+        if(event.OtherObject.Name == "Platform" || event.OtherObject.Name == "Floor")
+        {
+            this.Grounded = false;
+        }
+    }
+}
