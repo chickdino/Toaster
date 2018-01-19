@@ -1,0 +1,7 @@
+ContentLibrary = 
+{
+	string Name = "The Adventure of Toaster",
+	uint64 LibraryId = 5a8730c3ccb33034,
+	string SourceControlType = "",
+	bool ReadOnly = false,
+},

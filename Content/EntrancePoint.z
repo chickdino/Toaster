@@ -1,0 +1,16 @@
+class EntrancePoint : ZilchComponent
+{
+    var DataCog : Cog = null;
+    function Initialize(init : CogInitializer)
+    {
+        this.DataCog = Zero.ObjectStore.RestoreOrArchetype ("EntrancePointData", Archetype.SavedEntranceData, this.Space);
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        var player = this.Space.FindObjectByName("Player");
+        player.Transform.Translation = this.DataCog.RoomEntrancePoints.NewStartPos;
+        this.Owner.Destroy();
+    }
+}

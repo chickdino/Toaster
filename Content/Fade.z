@@ -1,0 +1,38 @@
+class Fade : ZilchComponent
+{
+    
+    [Property]
+    var FadeFromBlack : ColorGradient = null;
+    
+    var Value : Real = 0.0;
+    
+    var Reset : Boolean = true;
+    
+    function Initialize(init : CogInitializer)
+    {
+        this.Owner.Sprite.Color = this.FadeFromBlack.Sample(this.Value);
+        Zero.Connect(this.Space, Events.LogicUpdate, this.OnLogicUpdate);
+    }
+
+    function OnLogicUpdate(event : UpdateEvent)
+    {
+        var time = 1.0;
+        time -= event.Dt;
+        if(time <= 0)
+        {
+            this.Owner.Destroy;
+        }
+        
+        this.Reset = false;
+        this.InterpolateValue();
+        this.Owner.Sprite.Color = this.FadeFromBlack.Sample(this.Value);
+    }
+    
+    function InterpolateValue()
+    {
+        var moveSeq= Action.Sequence(this.Owner.Actions);
+        
+        Action.Property(moveSeq, @this.Value, 1.0, 1.5, Ease.Linear);
+        Action.Property(moveSeq, @this.Value, 0.0, 1.0, Ease.Linear);
+    }
+}
